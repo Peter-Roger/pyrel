@@ -1,0 +1,15 @@
+__pycache__/
+**/__pycache__/
+pyrel/kure/libkure.*
+pyrel/kure/cudd-2.5.1
+pyrel/kure/kure2-2.2
+
+# Setuptools distribution folders #
+###################################
+dist/
+build/
+
+
+# Python egg metadata #
+#######################
+pyrel.egg-info
