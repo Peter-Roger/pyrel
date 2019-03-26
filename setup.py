@@ -13,15 +13,15 @@ from distutils.command.build import build
 
 
 NAME = 'pyrel'
-DESCRIPTION = ('An efficient python library for working with and manipulating'
-    ' binary relations.')
+DESCRIPTION = ('An efficient python library for working with'
+    ' and manipulating binary relations.')
 with open("README.rst", "r") as fh:
     LONG_DESCRIPTION = fh.read()
 AUTHOR = "Peter Roger"
 URL = 'https://github.com/Peter-Roger/{name}'.format(name=NAME)
 MAJOR = 0
 MINOR = 1
-MICRO = 1
+MICRO = 4
 VERSION = '{major}.{minor}.{micro}'.format(
     major=MAJOR, minor=MINOR, micro=MICRO)
 LICENSE = 'GPLv3'

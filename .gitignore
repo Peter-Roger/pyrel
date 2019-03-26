@@ -9,7 +9,6 @@ pyrel/kure/kure2-2.2
 dist/
 build/
 
-
 # Python egg metadata #
 #######################
 pyrel.egg-info

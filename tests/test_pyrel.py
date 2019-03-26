@@ -222,7 +222,7 @@ class TestRelation(TestPyrelBase):
     def test_equal(self):
         self.rel.set_bits([(0,1),(2,3)])
         self.expected.set_bits([(0,1),(2,3)])
-        result = self.rel.equal(self.expected)
+        result = self.rel.equals(self.expected)
         self.assertTrue(result)
 
     def test_isSuperset(self):

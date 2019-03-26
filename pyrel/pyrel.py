@@ -20,7 +20,7 @@ different PyrelContexts.
 
 Classes:
     PyrelContext: Creates and destroys relations
-    Relation: Binary Relation implementation providing a number of
+    Relation: Binary Relation object providing a number of
               relational operations
 
 Exceptions:
@@ -58,7 +58,8 @@ class PyrelContext:
     destroys all relations it contains.
     """
     def __init__(self):
-        """
+        """Inititialize PyrelContext.
+
         Attributes:
             _context (KureContext): Wrapped KureContext C Object.
             ref (int): Incrementing reference number confered to
@@ -125,8 +126,7 @@ class PyrelContext:
             del self.relations[toDelete]
 
     def clean(self):
-        """Destroy all relations in context.
-        """
+        """Destroy all relations in context."""
         while self.relations:
             _, rel = self.relations.popitem()
             kure._rel_destroy(rel)
@@ -143,7 +143,8 @@ class Relation:
     zero_ch = '.'
 
     def __init__(self, context, ref, rel):
-        """
+        """Inititialize Relation
+
         Args:
             context (PyrelContext): The originating PyrelContext to which the relation belongs
             ref (int): Uniquely identifying relation reference number
@@ -172,8 +173,8 @@ class Relation:
         return b.decode(encoding="utf-8")
 
     def _is_relation(self, arg):
-        """Returns True if arg is of type Relation,
-        raises PyrelException otherwise.
+        """Returns True if arg is of type Relation, raises
+        PyrelException otherwise.
 
         Args:
             arg (obj): argument to check
@@ -237,6 +238,9 @@ class Relation:
 
         Returns:
             copy of relation
+
+        Raises:
+            PyrelException
         """
         rel = kure._rel_new_copy(self.rel)
         if rel:
@@ -248,13 +252,11 @@ class Relation:
     def clear(self):
         """Set all bits to zero.
 
-        Returns:
-            True if operation was successful, False otherwise
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         success = bool(ord(kure._empty(self.rel)))
-        if success:
-            return success
-        else:
+        if not success:
             self._kure_error()
 
     def random(self, prob=0.5):
@@ -264,16 +266,14 @@ class Relation:
             prob (float): probability between 0.0 and 1.0 that a bit
                           will be set
 
-        Returns:
-            True if operation was successful, False otherwise
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         success = self.clear()
         if isinstance(prob, float) and prob > 0.0:
             prob = min(1.0, prob)
             success = kure._random_simple(self.rel, c_float(prob))
-        if success:
-            return success
-        else:
+        if not success:
             self._kure_error()
 
     def empty(self):
@@ -281,6 +281,9 @@ class Relation:
 
         Returns:
             the empty relation (O)
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         result = self.context.new(self.rows, self.cols)
         success = bool(ord(kure._empty(result.rel)))
@@ -294,6 +297,9 @@ class Relation:
 
         Returns:
             the universal relation (L)
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         result = self.context.new(self.rows, self.cols)
         success = bool(ord(kure._universal(result.rel)))
@@ -307,6 +313,9 @@ class Relation:
 
         Returns:
             the identity relation (I)
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         result = self.context.new(self.rows, self.cols)
         success = bool(ord(kure._identity(result.rel)))
@@ -322,7 +331,10 @@ class Relation:
             other (Relation): other relation
 
         Returns:
-            True if operation was successful, False otherwise
+            The intersection of two relations
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
         result = self.context.new(self.rows, self.cols)
@@ -339,7 +351,10 @@ class Relation:
             other (Relation): other relation
 
         Returns:
-            True if operation was successful, False otherwise
+            The union of two relations
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
         result = self.context.new(self.rows, self.cols)
@@ -350,10 +365,13 @@ class Relation:
             self._kure_error()
 
     def transpose(self):
-        """Transpose relation.
+        """Transpose (converse) relation.
 
         Returns:
-            new transposed relation
+            the transposed relation
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         result = self.context.new(self.rows, self.cols)
         success = bool(ord(kure._transpose(result.rel, self.rel)))
@@ -363,10 +381,13 @@ class Relation:
             self._kure_error()
 
     def complement(self):
-        """Complement relation.
+        """Complement (negatation) relation.
 
         Returns:
-             new complemented relation
+             the complemented relation
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         result = self.context.new(self.rows, self.cols)
         success = bool(ord(kure._complement(result.rel, self.rel)))
@@ -383,7 +404,10 @@ class Relation:
             other (Relation): other relation
 
         Returns:
-            the resultant relation after composition
+            the composed relation
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
         result = self.context.new(self.rows, self.cols)
@@ -393,7 +417,7 @@ class Relation:
         else:
             self._kure_error()
 
-    def equal(self, other):
+    def equals(self, other):
         """Check equality of two relations.
 
         Args:
@@ -401,6 +425,9 @@ class Relation:
 
         Returns:
             True if relation is equal, otherwise False
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
         psuccess = c_char_p(b'')
@@ -419,6 +446,9 @@ class Relation:
 
         Returns:
             True if relation is superset, otherwise False
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
         psuccess = c_char_p(b'')
@@ -437,6 +467,9 @@ class Relation:
 
         Returns:
             True if relation is subset, otherwise False
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
         psuccess = c_char_p(b'')
@@ -455,9 +488,12 @@ class Relation:
 
         Returns:
             True if relation is a strict superset, otherwise False
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
-        return self.isSuperset(other) and not self.equal(other)
+        return self.isSuperset(other) and not self.equals(other)
 
     def isStrictSubset(self, other):
         """Check if other relation is a strict superset.
@@ -467,6 +503,9 @@ class Relation:
 
         Returns:
             True if relation is a strict superset, otherwise False
+
+        Raises:
+            PyrelException if operation was unsuccessful
         """
         self._is_relation(other)
-        return self.isSubset(other) and not self.equal(other)
+        return self.isSubset(other) and not self.equals(other)

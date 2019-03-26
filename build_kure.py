@@ -6,7 +6,6 @@
 """Build Kure shared library."""
 
 import argparse
-import ctypes
 import ctypes.util
 import os
 import shutil
@@ -26,8 +25,6 @@ CUDD_VERSION = '2.5.1'
 CUDD_DIRS = ['cudd', 'dddmp', 'epd', 'mtr', 'st', 'util']
 CUDD_PATH = os.path.join(DIR, 'cudd-{v}'.format(v=CUDD_VERSION))
 CUDD_TARBALL = "{}.tar.gz".format(CUDD_PATH)
-sizeof_long = ctypes.sizeof(ctypes.c_long)
-sizeof_void_p = ctypes.sizeof(ctypes.c_void_p)
 
 # KURE
 KURE_LIBS = []
@@ -47,12 +44,14 @@ KURE_LDFLAGS = [os.path.join(KURE_PATH, 'lib'),\
 
 cfg_vars = distutils.sysconfig.get_config_vars()
 
-# Macos
+# macOS
 if sys.platform == 'darwin':
     KURE_LIBS.extend(['kure', *CUDD_DIRS])
     cfg_vars['LDSHARED'] = cfg_vars['LDSHARED'].replace('-bundle', '-dynamiclib')
     cfg_vars['SHLIB_SUFFIX'] = '.dylib'
     cfg_vars['LDSHARED'] += ' -all_load'
+
+# Ubuntu
 else:
     CUDD_LIBS = ' '.join(['-l'+dir_ for dir_ in CUDD_DIRS])
     cfg_vars['LDSHARED'] = 'cc -shared -L/{}/lib -L/{}/lib -Wl,--whole-archive -Bstatic -lkure {} -Wl,--no-whole-archive'.format(KURE_PATH, CUDD_PATH, CUDD_LIBS)
@@ -90,12 +89,11 @@ def make_kure_shlib():
     distutils.sysconfig.customize_compiler(compiler)
 
     # write temporary .c file to compile to shared library
-    c_code = """#include <Kure.h>"""
     tmp_dir = tempfile.mkdtemp(prefix='tmp_dir_', dir='.')
-    shared_lib_name = os.path.join(tmp_dir, "kure")
-    file_name = "kure.c"
     os.chdir(tmp_dir)
+    file_name = "kure.c"
     with open(file_name, 'w') as fp:
+        c_code = """#include <Kure.h>"""
         fp.write(c_code)
     try:
         obj = compiler.compile([file_name],
