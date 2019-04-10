@@ -20,8 +20,8 @@ with open("README.rst", "r") as fh:
 AUTHOR = "Peter Roger"
 URL = 'https://github.com/Peter-Roger/{name}'.format(name=NAME)
 MAJOR = 0
-MINOR = 1
-MICRO = 4
+MINOR = 2
+MICRO = 0
 VERSION = '{major}.{minor}.{micro}'.format(
     major=MAJOR, minor=MINOR, micro=MICRO)
 LICENSE = 'GPLv3'
