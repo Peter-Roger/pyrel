@@ -60,7 +60,7 @@ Quick Start
 The following provides some examples as a tutorial on how to use pyrel.
 For a complete description you should consult the documented module `source code`_.
 
-Relations are represented as matrices and can be visualised by printing them. An 'X' at *col x* and *row y* denotes that *x* is related to *y* in the relation. Contrariwise a '.' denotes that *x* is not related to *y*.
+Relations are represented as boolean matrices and can be visualised by printing them. An 'X' at *col x* and *row y* denotes that *x* is related to *y* in the relation. Contrariwise a '.' denotes that *x* is not related to *y*.
 
 
 Creating relations
@@ -220,6 +220,34 @@ Operations
     .X.
 
     >>> True
+
+Vectors
+-------
+
+A vector is a row constant relation. All columns are identical. It represents a subset.
+
+.. code-block:: python
+
+    rel = new(5,5)
+    rel.vector(2) # row 2 (0-indexed)
+    print(rel)
+    rel.vector_next()
+    print(rel)
+
+.. code-block:: bash
+
+    .....
+    .....
+    XXXXX
+    .....
+    .....
+
+    .....
+    .....
+    .....
+    XXXXX
+    .....
+
 
 Possible Future Work
 --------------------

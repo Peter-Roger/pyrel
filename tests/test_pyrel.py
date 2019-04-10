@@ -273,6 +273,17 @@ class TestRelation(TestPyrelBase):
         result = self.rel.isStrictSubset(self.expected)
         self.assertFalse(result)
 
+    def test_vector(self):
+        self.expected.set_bits([(1,0),(1,1),(1,2),(1,3)])
+        self.rel.vector(1)
+        self.assertRelationsEqual(self.expected, self.rel)
+
+    def test_vector_next(self):
+        self.expected.set_bits([(1,0),(1,1),(1,2),(1,3)])
+        self.rel.vector()
+        self.rel.vector_next()
+        self.assertRelationsEqual(self.expected, self.rel)
+
     def test_clear(self):
         self.expected = self.expected.empty()
         self.rel.set_bits([(1,1),(2,2)])

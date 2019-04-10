@@ -49,7 +49,7 @@ class PyrelException(Exception):
         self.code = code
 
     def __str__(self):
-        return "{}: {}".format(self.__class__.__name__, self.msg)[:-1]
+        return "{}: {}.".format(self.__class__.__name__, self.msg)[:-1]
 
 class PyrelContext:
     """A PyrelContext is used to create and destroy relations. All
@@ -89,9 +89,11 @@ class PyrelContext:
             PyrelException: If the dimension specified by rows/cols is
                             invalid
         """
-        isValidDimension = (rows == 0 and cols == 0) or (rows > 0 and cols > 0)
+        isValidDimension = False
+        if type(rows) == int and type(cols) == int:
+            isValidDimension = (rows == 0 and cols == 0) or (rows > 0 and cols > 0)
         if not isValidDimension:
-            raise PyrelException("Invalid dimension. {}x{}".format(rows, cols))
+            raise PyrelException("Invalid dimension.")
         rel = kure._rel_new_with_size_si(self._context, c_int(rows), c_int(cols))
         self.ref += 1
         self.relations[self.ref] = rel
@@ -172,6 +174,14 @@ class Relation:
         b = kure._rel_to_string(self.rel, _true, _false)
         return b.decode(encoding="utf-8")
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return self.equals(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def _is_relation(self, arg):
         """Returns True if arg is of type Relation, raises
         PyrelException otherwise.
@@ -195,6 +205,16 @@ class Relation:
         msg = self.context._context.contents.error.contents.message.decode('utf-8')
         code = self.context._context.contents.error.contents.code
         raise PyrelException(msg, code)
+
+    def is_empty(self):
+        psuccess = c_char_p(b'')
+        result = kure._is_empty(self.rel, psuccess)
+        if result == kure.Kure_True:
+            return True
+        elif result == kure.Kure_False:
+            return False
+        else:
+            self._error()
 
     def set_bit(self, row, col, yesno=True):
         """Set a bit.
@@ -269,12 +289,15 @@ class Relation:
         Raises:
             PyrelException if operation was unsuccessful
         """
-        success = self.clear()
+        self.clear()
         if isinstance(prob, float) and prob > 0.0:
             prob = min(1.0, prob)
             success = kure._random_simple(self.rel, c_float(prob))
-        if not success:
-            self._kure_error()
+            if not success:
+                self._kure_error()
+        else:
+            raise PyrelException("Invalid argument. Prob must be a float \
+                between 0.0 and 1.0.")
 
     def empty(self):
         """Creates the empty relation of the same dimension.
@@ -438,6 +461,20 @@ class Relation:
         else:
             self._kure_error()
 
+    def notEquals(self, other):
+        """Check equality of two relations.
+
+        Args:
+            other (Relation): other relation
+
+        Returns:
+            True if relation is equal, otherwise False
+
+        Raises:
+            PyrelException if operation was unsuccessful
+        """
+        return not self.equals(other)
+
     def isSuperset(self, other):
         """Check if other relation is a superset.
 
@@ -509,3 +546,30 @@ class Relation:
         """
         self._is_relation(other)
         return self.isSubset(other) and not self.equals(other)
+
+    def vector(self, vector=0):
+        """Turn the relation into a vector.
+
+        Args:
+            vector (int): the vector (row)
+
+        Raises:
+            PyrelException if operation was unsuccessful
+        """
+        if type(vector) != int:
+            raise PyrelException("Invalid vector arg. Must be int.")
+        success = bool(ord(kure._vec_begin_full_si(self.rel, c_int(self.rows), c_int(self.cols))))
+        if not success:
+            self._kure_error()
+        self.vector_next(increment=vector)
+
+    def vector_next(self, increment=1):
+        """Increment the vector.
+
+        Raises:
+            PyrelException if operation was unsuccessful
+        """
+        for i in range(increment):
+            success = bool(ord(kure._vec_next(self.rel, self.rel)))
+            if not success:
+                self._kure_error()

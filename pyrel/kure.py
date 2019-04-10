@@ -175,3 +175,18 @@ _includes = wrap_func("kure_includes", KURE, ctypes.c_char,
                       ("R", c_rel_p),
                       ("S", c_rel_p),
                       ("psuccess", ctypes.c_char_p))
+
+_is_empty = wrap_func("kure_is_empty", KURE, ctypes.c_char,
+                      ("R", c_rel_p),
+                      ("psuccess", ctypes.c_char_p))
+
+
+# vectors
+_vec_begin_full_si = wrap_func("kure_vec_begin_full_si", KURE, ctypes.c_char,
+                      ("v", c_rel_p),
+                      ("rows", ctypes.c_int),
+                      ("cols", ctypes.c_int))
+
+_vec_next = wrap_func("kure_vec_next", KURE, ctypes.c_char,
+                      ("v", c_rel_p),
+                      ("arg", c_rel_p))
